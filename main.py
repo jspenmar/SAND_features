@@ -21,7 +21,7 @@ def main():
     n_dims = 32
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    ckpt_file = osp.join(rootpath, 'models', '32', 'ckpt_L.pt')
+    ckpt_file = osp.join(rootpath, 'models', '32', 'ckpt_G.pt')
     img_file = osp.join(rootpath, 'images', 'sample.png')
 
     # Load image & convert to torch format
