@@ -1,53 +1,64 @@
-# ---Standard packages---
+# ---Stdlib---
 import sys
-import os.path as osp
+from pathlib import Path
+from argparse import ArgumentParser
 
-rootpath = osp.dirname(__file__)  # Parent directory of this file
-if rootpath not in sys.path:
-    sys.path.insert(0, rootpath)  # Prepend to path so we can use these modules
-
-# ---External packages---
+# ---Dependencies---
 import torch
-import numpy as np
 from imageio import imread
 import matplotlib.pyplot as plt
 
-# ---Custom packages---
-from ops import torch2np, img2torch, fmap2img
-from sand import Sand, load_sand_ckpt
+# ---Custom---
+ROOT = Path(__file__) .parent  # Path to repo
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)  # Prepend to path so we can use these modules
+
+from utils import ops
+from models import Sand
+
+
+DEFAULT_MODEL_NAME = '3/ckpt_G'
+DEFAULT_MODEL_PATH = ROOT/'ckpts'
+DEFAULT_IMAGE = ROOT/'images'/'sample.png'
+
+parser = ArgumentParser('SAND feature extraction demo')
+parser.add_argument('--model-name', default=DEFAULT_MODEL_NAME, help='Name of model to load')
+parser.add_argument('--model-path', default=DEFAULT_MODEL_PATH, help='Path to directory containing models')
+parser.add_argument('--image-file', default=DEFAULT_IMAGE, help='Path to image to run inference on')
 
 
 def main():
-    n_dims = 32
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    args = parser.parse_args()
+    device = ops.get_device()
 
-    ckpt_file = osp.join(rootpath, 'models', '32', 'ckpt_G.pt')
-    img_file = osp.join(rootpath, 'images', 'sample.png')
+    ckpt_file = Path(args.model_path, args.model_name).with_suffix('.pt')
+    img_file = Path(args.image_file)
 
     # Load image & convert to torch format
     img_np = imread(img_file)
-    img_torch = img2torch(img_np).to(device)
+    img_torch = ops.img2torch(img_np, batched=True).to(device)
 
     print(f'Image size (np): {img_np.shape}')
     print(f'Image size (torch): {img_torch.shape}')
 
     # Create & load model (single branch)
-    model = Sand(n_dims).to(device)
+    model = Sand.from_ckpt(ckpt_file).to(device)
     model.eval()
-    load_sand_ckpt(model, ckpt_file)  # Check it's working by commenting out line & visualizing
 
-    # Run inference (wrap with no_grad -> save memory + faster)
+    # Run inference
     with torch.no_grad():
-        features_torch = model(img_torch).cpu()
+        features_torch = model(img_torch)
 
-    # Convert to image by PCAing features
-    features_np = fmap2img(features_torch).squeeze(0)
+    # Convert features into an images we can visualize (by PCA or normalizing)
+    features_np = ops.fmap2img(features_torch).squeeze(0)
 
     print(f'Feature size (torch): {features_torch.shape}')
     print(f'Feature size (np): {features_np.shape}')
 
     # Plot original image & extracted features
-    _, (ax1, ax2) = plt.subplots(2, 1)
+    ax1, ax2 = plt.subplots(2, 1)[1]
+    ax1.set_xticks([]), ax1.set_yticks([])
+    ax2.set_xticks([]), ax2.set_yticks([])
     ax1.imshow(img_np)
     ax2.imshow(features_np)
     plt.show()

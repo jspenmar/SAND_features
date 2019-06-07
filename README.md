@@ -16,7 +16,6 @@ Please cite the following paper if you find SAND useful in your research:
 ```
 
 ## Introduction
-
 How do computers and intelligent agents view the world around them?
 Feature extraction and representation constitutes one the basic building blocks towards answering this question. 
 Traditionally, this has been done with carefully engineered hand-crafted techniques such as HOG, SIFT or ORB.
@@ -35,12 +34,12 @@ This includes disparity estimation, semantic segmentation, self-localisation and
 In all cases, we show how incorporating SAND features results in better or comparable results to the baseline, whilst requiring little to no additional training.
 
 <p align="center">
-  <img src="images/sample_viz2.png">
+  <img src="images/sample_viz.png">
 </p>
 
 ## Prerequisites
 - Python >= 3.6
-- PyTorch >= 0.4 (not tested later versions)
+- PyTorch >= 0.4
 - Imageio (from image reading)
 - Matplotlib (for visualization)
 - Sklearn (for PCA reduction)
@@ -48,15 +47,14 @@ In all cases, we show how incorporating SAND features results in better or compa
 ## Usage
 Breakdown for "[main.py](main.py)":
 ```
-# Create and load pretrained SAND branch
-model = Sand(32)
-load_sand_ckpt(model, 'path/to/repo/models/32/ckpt_G.pt')
+# Create and load model
+model = Sand.from_ckpt(ckpt_file, n_dims=10).to(device)  # n_dims is optional sanity check
 ```
 
 To visualize the features produced by the network:
 ```
-features = model(img)
-features = fmap2img(features_torch)  # Provided in "ops.py"
+features_torch = model(img)
+features = ops.fmap2img(features_torch)
 plt.imshow(features)
 plt.show()
 ```
@@ -64,7 +62,7 @@ plt.show()
 ## Models
 All models have been trained on a subset of the Kitti odometry sequence 00.
 We provide **G**lobal, **L**ocal and hierarchical (**GL**) models for features of dimensionality 3, 10 & 32.
-Models should be placed in "path/to/repo/models/" and can be loaded using torch.load()
+Models should be placed in "path/to/repo/ckpts/" and can be loaded using torch.load() or directly with Sand.from_ckpt
 
 3-D: &nbsp; [G](https://drive.google.com/file/d/1SGj2VHN78QaA5GWfOwxPbnj0M_-XgJwu/view?usp=sharing) --
 [L](https://drive.google.com/open?id=1Mjhx21n0h78CoE6zrmREhRDMVHXOLX62) -- 

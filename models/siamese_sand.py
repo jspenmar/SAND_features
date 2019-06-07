@@ -1,10 +1,9 @@
-# ---External packages---
+# ---Dependencies---
 import torch
 import torch.nn as nn
 
-# ---Custom packages---
-from sand import Sand
-from ops import torch2np
+# ---Custom---
+from models import Sand
 
 
 class SiameseSand(nn.Module):
