@@ -1,17 +1,17 @@
 # ---Stdlib---
 import sys
-from pathlib import Path
 from argparse import ArgumentParser
+from pathlib import Path
 
 # ---Dependencies---
 import torch
-from imageio import imread
 import matplotlib.pyplot as plt
+from imageio import imread
 
 # ---Custom---
-ROOT = Path(__file__) .parent  # Path to repo
-if ROOT not in sys.path:
-    sys.path.insert(0, ROOT)  # Prepend to path so we can use these modules
+ROOT = Path(__file__).parent  # Path to repo
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))  # Prepend to path so we can use these modules
 
 from utils import ops
 from models import Sand
